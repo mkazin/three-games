@@ -1,3 +1,6 @@
+# Secrets
+config/auth.conf
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -9,6 +12,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+env3/
 build/
 develop-eggs/
 dist/
@@ -99,3 +103,4 @@ ENV/
 
 # mypy
 .mypy_cache/
+
