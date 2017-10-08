@@ -47,7 +47,6 @@ class SteamApi(object):
                '&format=json').format(
             self.api_key, steamid,
             1, 1)
-        print(url)
         resp = requests.get(url)
 
         resp.raise_for_status()
@@ -71,7 +70,6 @@ class SteamApi(object):
         resp = requests.get(url)
 
         resp.raise_for_status()
-        print(resp.json)
         return resp.json()['friendslist']['friends']
 
     def get_player_achievements(self, steamid, app_id):
