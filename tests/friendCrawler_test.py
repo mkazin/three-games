@@ -23,26 +23,6 @@ class MockSteamApi(SteamApi):
             response.append(MockSteamApi.PLAYER_LIST[str(curr)])
         return response
 
-        # Network graph:
-        # 1 -> 2, 3
-        # 2 -> 1, 4
-        # 3 -> 1, 4
-        # 4 -> 2, 3, 5
-        # 5 -> 4
-
-        # Depth:
-        # 3 ->
-        #   1 ->
-        #       2 ->
-        #           1 (backtrack)
-        #           4 ->
-        #               2 (backtrack)
-        #               3 (seen)
-        #               5 ->
-        #                   4 (backtrack)
-        #       3 (backtrack)
-        #   4 -> (seen)
-
     FRIENDS_RESPONSE = {
         '1': [
             {"steamid": "2", "relationship": "friend", "friend_since": 1447349026},
