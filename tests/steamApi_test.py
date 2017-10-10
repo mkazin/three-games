@@ -23,6 +23,9 @@ GAMES_RESPONSE_PER_STEAMID = {
 }
 
 
+# TODO: merge with the Mock class in friendCrawler_test and use in both
+#       this is because I added querying of the games during the friend crawl,
+#       but neglected to override the function there
 class MockSteamApi(SteamApi):
 
     def __init__(self):
