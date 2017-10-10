@@ -69,6 +69,10 @@ class SteamApi(object):
 
         resp = requests.get(url)
 
+        # TODO: When we figure out error handling around privacy
+        if len(resp.json().keys()) == 0:
+            return []
+
         resp.raise_for_status()
         return resp.json()['friendslist']['friends']
 

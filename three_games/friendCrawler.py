@@ -3,6 +3,8 @@ from three_games.player import Player
 
 class FriendCrawler(object):
 
+    # TODO: Check out Teepeeh's steam id as a good potential graph
+
     def __init__(self, steam_api):
         self.api = steam_api
 
@@ -52,6 +54,10 @@ class FriendCrawler(object):
                 self.player_cache[friend_id] = friend
 
                 player.add_friend(friend)
+
+                games_resp = self.api.get_owned_games(friend_id)
+                for curr in games_resp:
+                    friend.add_games(OwnedGame.from_response(curr))
 
                 # We also don't want to recurse on already-handled players
                 self.recurse_friends(friend, graph_depth - 1)

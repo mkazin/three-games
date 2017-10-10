@@ -22,8 +22,13 @@ class Player(object):
         # TODO: when we get to analyzing clan relationships...
         # self.clan_mates
 
+        self.games = []
+
     def add_friend(self, other_player):
         self.friends.append(other_player)
+
+    def add_game(self, owned_game):
+        self.games.append(owned_game)
 
     @staticmethod
     def from_response(response):
@@ -42,23 +47,3 @@ class Player(object):
             locstatecode=response.get('locstatecode', None),
             loccityid=response.get('loccityid', None)
         )
-
-    # {
-    #     "steamid": "76561198025093417",
-    #     "communityvisibilitystate": 3,
-    #     "profilestate": 1,
-    #     "personaname": "mkazin",
-    #     "lastlogoff": 1506984892,
-    #     "profileurl": "http://steamcommunity.com/profiles/76561198025093417/",
-    #     "avatar": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/ec/ec90f275c5045aa4de008a75ea9d0098a832575b.jpg",
-    #     "avatarmedium": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/ec/ec90f275c5045aa4de008a75ea9d0098a832575b_medium.jpg",
-    #     "avatarfull": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/ec/ec90f275c5045aa4de008a75ea9d0098a832575b_full.jpg",
-    #     "personastate": 1,
-    #     "realname": "Michael Kazin",
-    #     "primaryclanid": "103582791435135156",
-    #     "timecreated": 1273757737,
-    #     "personastateflags": 0,
-    #     "loccountrycode": "US",
-    #     "locstatecode": "MA",
-    #     "loccityid": 1840
-    # }
