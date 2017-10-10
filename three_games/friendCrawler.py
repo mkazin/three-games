@@ -1,5 +1,5 @@
 from three_games.player import Player
-
+from three_games.game import OwnedGame
 
 class FriendCrawler(object):
 
@@ -55,9 +55,9 @@ class FriendCrawler(object):
 
                 player.add_friend(friend)
 
-                games_resp = self.api.get_owned_games(friend_id)
-                for curr in games_resp:
-                    friend.add_games(OwnedGame.from_response(curr))
+                # games_resp = self.api.get_owned_games(friend_id)
+                # for curr in games_resp:
+                #     friend.add_game(OwnedGame.from_response(curr))
 
                 # We also don't want to recurse on already-handled players
                 self.recurse_friends(friend, graph_depth - 1)
