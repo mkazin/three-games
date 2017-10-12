@@ -28,11 +28,11 @@ def test_get_player_summaries():
     api = MockSteamApi()
 
     single_result = api.get_player_summary(3)
-    assert single_result['realname'] == 'Player Three'
+    assert single_result['realname'] == 'Carl'
 
     multiple_results = api.get_player_summaries([2, 3])
-    assert multiple_results[0]['realname'] == 'Player Two'
-    assert multiple_results[1]['realname'] == 'Player Three'
+    assert multiple_results[0]['realname'] == 'Bob'
+    assert multiple_results[1]['realname'] == 'Carl'
 
 
 def test_get_owned_games():
