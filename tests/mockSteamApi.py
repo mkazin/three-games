@@ -28,11 +28,11 @@ class MockSteamApi(SteamApi):
         return MockSteamApi.GAMES_RESPONSE_PER_STEAMID[steamid]
 
     PLAYER_LIST = {
-        '1': {"steamid": "1", "personaname": "player_one", "realname": "Player One"},
-        '2': {"steamid": "2", "personaname": "player_two", "realname": "Player Two"},
-        '3': {"steamid": "3", "personaname": "player_three", "realname": "Player Three"},
-        '4': {"steamid": "4", "personaname": "player_four", "realname": "Player Four"},
-        '5': {"steamid": "5", "personaname": "player_five", "realname": "Player Five"},
+        '1': {"steamid": "1", "personaname": "player_one", "realname": "Alice"},
+        '2': {"steamid": "2", "personaname": "player_two", "realname": "Bob"},
+        '3': {"steamid": "3", "personaname": "player_three", "realname": "Carl"},
+        '4': {"steamid": "4", "personaname": "player_four", "realname": "Debra"},
+        '5': {"steamid": "5", "personaname": "player_five", "realname": "Eustice"},
     }
 
     def get_player_summaries(self, steamids):

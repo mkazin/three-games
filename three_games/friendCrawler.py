@@ -3,8 +3,6 @@ from three_games.game import OwnedGame
 
 class FriendCrawler(object):
 
-    # TODO: Check out Teepeeh's steam id as a good potential graph
-
     def __init__(self, steam_api):
         self.api = steam_api
 
