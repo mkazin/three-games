@@ -24,6 +24,12 @@ class Player(object):
 
         self.games = []
 
+    def __str__(self):
+        return '{}: {}'.format(self.steamid, self.realname)
+
+    def __repr__(self):
+        return str(self)
+
     def add_friend(self, other_player):
         self.friends.append(other_player)
 
