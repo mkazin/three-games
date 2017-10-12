@@ -1,5 +1,7 @@
+import logging
 from three_games.player import Player
 from three_games.game import OwnedGame
+
 
 class FriendCrawler(object):
 
@@ -9,29 +11,20 @@ class FriendCrawler(object):
         # Cache all retrieved players to minimize API hits
         self.player_cache = {}
 
-    def build_friend_graph(self, steamid, graph_depth=3):
+    def build_friend_graph(self, steamid):
 
         # Start with the requested player
         center = Player.from_response(self.api.get_player_summary(steamid=steamid))
         self.player_cache[center.steamid] = center
 
         # Recurse over friends
-        self.recurse_friends(player=center, graph_depth=graph_depth)
-
-        # print('CACHE AFTER recurse_friends() :')
-        # for player_key in self.player_cache.keys():
-        #     player = self.player_cache[player_key]
-        #     print('{} : {} has {} friends: ({})'.format(
-        #         player.steamid, player.realname,
-        #         len(player.friends), [f.steamid for f in player.friends]))
+        self._recurse_friends_(player=center)
 
         return center
 
-    def recurse_friends(self, player, graph_depth):
+    def _get_friend_list_(self, player):
 
-        if graph_depth < 1:
-            return
-
+        results = []
         friends_response = self.api.get_friend_list(
             player.steamid, relationship='all')
 
@@ -42,7 +35,7 @@ class FriendCrawler(object):
 
             try:
                 friend = self.player_cache[friend_id]
-                player.add_friend(friend)
+                results.append(friend)
 
             except KeyError:
 
@@ -50,12 +43,27 @@ class FriendCrawler(object):
                 friend = Player.from_response(
                     self.api.get_player_summary(steamid=friend_id))
                 self.player_cache[friend_id] = friend
+                results.append(friend)
 
+        return results
+
+    def _recurse_friends_(self, player):
+
+        player_queue = [player]
+        visited = {player.steamid: False}
+
+        while player_queue:
+
+            player = player_queue.pop(0)
+
+            if visited.get(player.steamid, False):
+                continue
+
+            friends = self._get_friend_list_(player)
+
+            # Connect all the player's friends
+            for friend in friends:
                 player.add_friend(friend)
+                player_queue.append(friend)
 
-                # games_resp = self.api.get_owned_games(friend_id)
-                # for curr in games_resp:
-                #     friend.add_game(OwnedGame.from_response(curr))
-
-                # We also don't want to recurse on already-handled players
-                self.recurse_friends(friend, graph_depth - 1)
+            visited[player.steamid] = True

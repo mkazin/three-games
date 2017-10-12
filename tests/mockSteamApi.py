@@ -32,7 +32,7 @@ class MockSteamApi(SteamApi):
         '2': {"steamid": "2", "personaname": "player_two", "realname": "Bob"},
         '3': {"steamid": "3", "personaname": "player_three", "realname": "Carl"},
         '4': {"steamid": "4", "personaname": "player_four", "realname": "Debra"},
-        '5': {"steamid": "5", "personaname": "player_five", "realname": "Eustice"},
+        '5': {"steamid": "5", "personaname": "player_five", "realname": "Eustace"},
     }
 
     def get_player_summaries(self, steamids):
