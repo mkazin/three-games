@@ -70,3 +70,56 @@ class MockSteamApi(SteamApi):
 
     def get_friend_list(self, steamid, relationship='all'):
         return(MockSteamApi.FRIENDS_RESPONSE[str(steamid)])
+
+    ACHIEVEMENTS_RESPONSE_PER_STEAMID = {
+        "3": {
+            "achievements": [
+                {
+                    "apiname": "NEW_ACHIEVEMENT_1_0",
+                    "achieved": 1,
+                    "unlocktime": 1447211351,
+                    "name": "War Never Changes",
+                    "description": ""
+                },
+                {
+                    "apiname": "NEW_ACHIEVEMENT_8_0",
+                    "achieved": 0,
+                    "unlocktime": 0,
+                    "name": "The Nuclear Option",
+                    "description": ""
+                },
+                {
+                    "apiname": "NEW_ACHIEVEMENT_9_0",
+                    "achieved": 0,
+                    "unlocktime": 0,
+                    "name": "Institutionalized",
+                    "description": ""
+                },
+                {
+                    "apiname": "NEW_ACHIEVEMENT_12_0",
+                    "achieved": 0,
+                    "unlocktime": 0,
+                    "name": "Nuclear Family",
+                    "description": ""
+                },
+                {
+                    "apiname": "NEW_ACHIEVEMENT_21_0",
+                    "achieved": 0,
+                    "unlocktime": 0,
+                    "name": "Rockets' Red Glare",
+                    "description": ""
+                },
+                {
+                    "apiname": "NEW_ACHIEVEMENT_40_0",
+                    "achieved": 1,
+                    "unlocktime": 1448942430,
+                    "name": "Masshole",
+                    "description": ""
+                }
+            ]
+        }
+    }
+
+    def get_player_achievements(self, steamid, app_id):
+        return(MockSteamApi.ACHIEVEMENTS_RESPONSE_PER_STEAMID[
+            str(steamid)]['achievements'])

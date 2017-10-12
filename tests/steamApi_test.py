@@ -1,5 +1,5 @@
 from three_games.game import OwnedGame
-from three_games.steamApi import SteamApi
+from tests.mockSteamApi import MockSteamApi
 
 STEAM_ID_MKAZIN = 76561198025093417
 APP_ID_FALLOUT_4 = 377160
@@ -23,27 +23,16 @@ GAMES_RESPONSE_PER_STEAMID = {
 }
 
 
-# TODO: merge with the Mock class in friendCrawler_test and use in both
-#       this is because I added querying of the games during the friend crawl,
-#       but neglected to override the function there
-class MockSteamApi(SteamApi):
-
-    def __init__(self):
-        pass
-
-    def get_owned_games(self, steamid):
-        return GAMES_RESPONSE_PER_STEAMID[steamid]
-
-
 def test_get_player_summaries():
 
-    api = SteamApi('config/auth.conf')
+    api = MockSteamApi()
 
-    single_result = api.get_player_summary(STEAM_ID_MKAZIN)
-    assert single_result['realname'] == 'Michael Kazin'
+    single_result = api.get_player_summary(3)
+    assert single_result['realname'] == 'Player Three'
 
-    multiple_results = api.get_player_summaries([STEAM_ID_MKAZIN])
-    assert multiple_results[0]['realname'] == 'Michael Kazin'
+    multiple_results = api.get_player_summaries([2, 3])
+    assert multiple_results[0]['realname'] == 'Player Two'
+    assert multiple_results[1]['realname'] == 'Player Three'
 
 
 def test_get_owned_games():
@@ -81,9 +70,9 @@ def test_get_owned_games():
 
 
 def test_get_player_achievements():
-    api = SteamApi('config/auth.conf')
+    api = MockSteamApi()
 
-    achievements = api.get_player_achievements(STEAM_ID_MKAZIN, APP_ID_FALLOUT_4)
+    achievements = api.get_player_achievements(3, APP_ID_FALLOUT_4)
 
     # Transform into a simple list of achivement names
     achivement_names = [a['name'] for a in achievements]
@@ -97,14 +86,20 @@ def test_get_player_achievements():
 
 
 def test_get_friend_list():
-    api = SteamApi('config/auth.conf')
+    api = MockSteamApi()
 
-    friends = api.get_friend_list(STEAM_ID_MKAZIN, relationship='all')
+    friends = api.get_friend_list(3, relationship='all')
+
+    assert(len(friends) == 2)
 
     # Sort by time- oldest first
     friends_by_time = sorted(friends,
                              key=lambda k: k['friend_since'], reverse=False)
 
-    assert(friends_by_time[0]['steamid'] == "76561197996829576")
+    assert(friends_by_time[0]['steamid'] == "4")
     assert(friends_by_time[0]['relationship'] == "friend")
-    assert(friends_by_time[0]['friend_since'] == 1321052248)
+    assert(friends_by_time[0]['friend_since'] == 1325266988)
+
+    assert(friends_by_time[1]['steamid'] == "1")
+    assert(friends_by_time[1]['relationship'] == "friend")
+    assert(friends_by_time[1]['friend_since'] == 1447349026)
