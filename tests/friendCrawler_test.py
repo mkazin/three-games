@@ -3,22 +3,39 @@ from tests.mockSteamApi import MockSteamApi
 from three_games.steamApi import SteamApi
 from three_games.friendCrawler import FriendCrawler
 
-def test_crawl():
+# RocketLeague player and all-around awesome dude who suggestsed that
+# game (^^) as a good userbase for testing this project.
+STEAM_USER_CRNXX = "crnxx"
 
-    # RocketLeague player and all-around awesome dude who suggestsed that
-    # game (^^) as a good userbase for testing this project. 
-    STEAM_USER_CRNXX = "crnxx"
 
-    # TODO: Try some simpler, closed circle graphs with a large 
-    #       radius, as a way to test graph_depth. Different 
-    #       centers (steamid parameter) should produce the same
-    #       graph G (i.e. neo4j objects)
+def test_deep_crawl():
+
+    GRAPH_DEPTH = 6
 
     crawler = FriendCrawler(MockSteamApi())
 
-    center = crawler.build_friend_graph(steamid=3, graph_depth=6)
+    center = crawler.build_friend_graph(steamid=3, graph_depth=GRAPH_DEPTH)
     output_player(player=center, level=0)
 
+    perform_graph_assertions(center)
+
+
+def test_shallow_crawl():
+    """ Try some simpler, closed circle graphs with a large radius, 
+        as a way to test graph_depth. Different centers (steamid 
+        parameter) should produce the same graph G (i.e. neo4j objects)
+    """
+    GRAPH_DEPTH = 3
+
+    crawler = FriendCrawler(MockSteamApi())
+
+    center = crawler.build_friend_graph(steamid=3, graph_depth=GRAPH_DEPTH)
+    output_player(player=center, level=0)
+
+    perform_graph_assertions(center)
+
+
+def perform_graph_assertions(center):
     # The entry node of the graph is Carl
     assert(center.steamid == '3')
     assert(center.realname == 'Carl')
@@ -37,8 +54,8 @@ def test_crawl():
     # Debra should be a friend of Carl and a node
     debra = get_friend_by_steamid(carl, '4')
     assert(debra.realname == 'Debra')
-    # Debra should have three friends: 2 (Bob), 3 (Carl), and 5 (Eustice)
-    assert([f.steamid for f in debra.friends] == ['2', '3', '5'])
+    # Debra should have three friends: 1 (Alice), 3 (Carl), and 5 (Eustice)
+    assert([f.steamid for f in debra.friends] == ['1', '3', '5'])
 
     # Bob should be a friend of Debra and a node
     bob = get_friend_by_steamid(debra, '2')
@@ -64,10 +81,11 @@ def get_friend_by_steamid(player, steamid):
             return friend
     return None
 
+
 def output_player(player, level):
     if level > 3:
         return
     print('{}#{} - {} has {} friends'.format(
-        '\t'* level, player.steamid, player.realname, len(player.friends)))
+        '\t' * level, player.steamid, player.realname, len(player.friends)))
     for friend in player.friends:
         output_player(friend, level + 1)
