@@ -36,6 +36,10 @@ def perform_graph_assertions(center):
     # Alice should have two friends: 2 (Bob), 3 (Carl)
     assert([f.steamid for f in alice.friends] == ['2', '3'])
 
+    assert alice.owns(7610)
+    assert alice.owns(24980)
+    assert alice.owns(234650)
+
     # Debra should be a friend of Carl and a node
     debra = get_friend_by_steamid(carl, '4')
     assert(debra.realname == 'Debra')
