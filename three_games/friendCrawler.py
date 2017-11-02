@@ -1,6 +1,6 @@
-import logging
 from three_games.player import Player
 from three_games.game import OwnedGame
+from requests.exceptions import HTTPError
 
 
 class FriendCrawler(object):
@@ -18,8 +18,13 @@ class FriendCrawler(object):
         center = Player.from_response(self.api.get_player_summary(steamid=steamid))
         self.player_cache[center.steamid] = center
 
-        # Recurse over friends
-        self._recurse_friends_(player=center)
+        # Crawl over friends
+        try:
+            self._crawl_friends_(player=center)
+        except HTTPError as e:
+            # If we exceed the limit, return whatever we've collected
+            if '429' not in str(e):
+                raise e
 
         return center
 
@@ -60,24 +65,11 @@ class FriendCrawler(object):
         games_response = self.api.get_owned_games(player.steamid)
 
         for curr in games_response:
-
-            # Check if we already have this friend
-            game_id = curr['appid']
-
-            try:
-                game = self.game_cache[game_id]
-                results.append(game)
-
-            except KeyError:
-
-                game = OwnedGame.from_response(curr)
-
-                self.game_cache[game_id] = game
-                results.append(game)
+            results.append(OwnedGame.from_response(curr))
 
         return results
 
-    def _recurse_friends_(self, player):
+    def _crawl_friends_(self, player):
 
         player_queue = [player]
         visited = {player.steamid: False}

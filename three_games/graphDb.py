@@ -9,6 +9,52 @@ https://aws.amazon.com/nosql/graph/
 """
 
 
+class TraversalFilter(object):
+    """ Interface for filters determining whether or not to traverse
+        a friend
+    """
+
+    def traversible(self, object):
+        raise NotImplemented
+
+
+class PlayerExclusionTraversalFilter(TraversalFilter):
+    """ Allows filtering out of a list of players """
+
+    def __init__(self, players):
+        self.excluded = [player.steamid for player in players]
+
+    def traversible(self, player):
+        return player.steamid not in self.excluded
+
+
+class ClanTraversalFilter(TraversalFilter):
+    """ Allows filtering out friends who do not belong to a particular
+    gaming clan
+    """
+
+    def __init__(self, clan):
+        raise NotImplemented
+
+    def traversible(self, object):
+        # return object.clan == self.clan
+        raise NotImplemented
+
+
+# class DiminishingWeight(object):
+
+#     def __init__(self, start_weight, reudction_rate):
+#         self.weight = start_weight
+#         self.round = 0
+#         self.reudction_rate = reudction_rate
+
+#     def weight(self):
+#         return self.weight
+
+#     def advance_round(self):
+#         self.weight = self.weight * self.reudction_rate
+
+
 class GraphDB():
 
     def __init__(self):
@@ -39,29 +85,53 @@ class GraphDB():
     def edges(self):
         return self.graph.edges
 
-    def game_recommendations(self, center, search_limit=30):
-        """ Builds a list of the players found in a player graph """
+    def game_recommendations(self, center, search_limit=30, filters=[]):
+                             # TODO: , weighter=None):
+        """ Builds a list recommendations based on highest overall playtime
+            Returns a sorted list of tuples in the form (appid, cumulative_playtime) """
         results = []
 
         searches_left = search_limit
         player_queue = [center]
         visited = {center.steamid: False}
+        game_durations = {}
 
         while player_queue:
 
             player = player_queue.pop(0)
 
+            # If already visited, skip
             if visited.get(player.steamid, False):
                 continue
 
+            # Enqueue player's friends for BFS traversal
             for friend in player.friends:
-                if player not in results:
-                    results.append(player)
-
                 player_queue.append(friend)
-                visited[player.steamid] = True
 
-        return results
+            if __passes_filters__(player, filters):
+                # Add the playtime of each of this players' games
+                for game in player.games:
+                    try:
+                        game_durations[game.game.appid] += game.playtime_forever
+                    except KeyError:
+                        game_durations[game.game.appid] = game.playtime_forever
+
+            print(player, game_durations)
+            visited[player.steamid] = True
+
+        # Sort by playtime_forever and return the top results
+        sorted_games = sorted(game_durations.items(), key=lambda x: x[1])
+        sorted_games.reverse()
+
+        return sorted_games[:3]
+
+
+def __passes_filters__(player, filters):
+    for filter in filters:
+        if not filter.traversible(player):
+            return False
+    return True
+
 """
 
 Option A:

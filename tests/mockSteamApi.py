@@ -21,6 +21,9 @@ class MockSteamApi(SteamApi):
         ],
         '3': [
             {"appid": 24980, "name": "Mass Effect 2",  "playtime_forever": 40},
+        ],
+        '4': [
+            {"appid": 234650, "name": "Shadowrun Returns",  "playtime_forever": 20000}
         ]
     }
 

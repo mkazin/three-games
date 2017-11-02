@@ -1,6 +1,9 @@
 # Secrets
 config/auth.conf
 
+# Cached data
+steamApi_cache.*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
