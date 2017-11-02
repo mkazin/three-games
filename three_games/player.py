@@ -36,6 +36,12 @@ class Player(object):
     def add_game(self, owned_game):
         self.games.append(owned_game)
 
+    def owns(self, app_id):
+        """ Returns whether user owns an application.
+            NOTE: does not query the API
+                  Assumes Player has been populated via add_game() """
+        return app_id in [game.game.appid for game in self.games]
+
     @staticmethod
     def from_response(response):
 

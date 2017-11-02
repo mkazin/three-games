@@ -25,7 +25,10 @@ class MockSteamApi(SteamApi):
     }
 
     def get_owned_games(self, steamid):
-        return MockSteamApi.GAMES_RESPONSE_PER_STEAMID[steamid]
+        try:
+            return MockSteamApi.GAMES_RESPONSE_PER_STEAMID[steamid]
+        except KeyError:
+            return []
 
     PLAYER_LIST = {
         '1': {"steamid": "1", "personaname": "player_one", "realname": "Alice"},
