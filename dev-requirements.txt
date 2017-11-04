@@ -1,1 +1,6 @@
 pytest==3.2.3
+
+# For collecting and uploading code coverage to CodeClimate
+coverage==4.3
+pytest-cov
+codeclimate-test-reporter
