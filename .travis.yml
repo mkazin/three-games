@@ -8,4 +8,4 @@ script:
         - "pytest --cov=three_games tests"
 after_sucess:
         - codeclimate-test-reporter --token $CODECLIMATE_REPO_TOKEN
-        - echo "Done"
+
