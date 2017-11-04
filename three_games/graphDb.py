@@ -17,6 +17,13 @@ class TraversalFilter(object):
     def traversible(self, object):
         raise NotImplemented
 
+    @staticmethod
+    def passes(player, filters):
+        for filter in filters:
+            if not filter.traversible(player):
+                return False
+        return True
+
 
 class PlayerExclusionTraversalFilter(TraversalFilter):
     """ Allows filtering out of a list of players """
@@ -63,8 +70,6 @@ class GraphDB():
 
     def insert_players(self, players):
 
-        added_paths = []
-
         for curr in players:
 
             # Skip players already in the db
@@ -108,7 +113,7 @@ class GraphDB():
             for friend in player.friends:
                 player_queue.append(friend)
 
-            if __passes_filters__(player, filters):
+            if TraversalFilter.passes(player, filters):
                 # Add the playtime of each of this players' games
                 for game in player.games:
                     try:
@@ -125,12 +130,6 @@ class GraphDB():
 
         return sorted_games[:3]
 
-
-def __passes_filters__(player, filters):
-    for filter in filters:
-        if not filter.traversible(player):
-            return False
-    return True
 
 """
 
