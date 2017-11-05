@@ -91,9 +91,6 @@ def test_minimum_playtime_filter():
     assert alice in top_games[2].friends_with_game
     assert carl not in top_games[2].non_friend_owners
 
-    print(top_games)
-    assert False
-
 
 def test_api_hit_limit():
 
