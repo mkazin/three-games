@@ -1,26 +1,7 @@
 from three_games.game import OwnedGame
 from tests.mockSteamApi import MockSteamApi
 
-STEAM_ID_MKAZIN = 76561198025093417
 APP_ID_FALLOUT_4 = 377160
-
-GAMES_RESPONSE_PER_STEAMID = {
-    '1': [
-        {"appid": 7610, "name": "Railroad Tycoon 3", "playtime_forever": 100},
-        {"appid": 24980, "name": "Mass Effect 2",  "playtime_forever": 400},
-        {"appid": 234650, "name": "Shadowrun Returns",  "playtime_forever": 200,
-         'has_community_visible_stats': True,
-         'img_logo_url': "70f084857297d5fdd96d019db3a990d6d9ec64f1",
-         'img_icon_url': "64eec20c9375e7473b964f0d0bc41d19f03add3b"}
-    ],
-    '2': [
-        {"appid": 7610, "name": "Railroad Tycoon 3",  "playtime_forever": 1000},
-        {"appid": 33230, "name": "Assassin's Creed II",  "playtime_forever": 3000},
-    ],
-    '3': [
-        {"appid": 24980, "name": "Mass Effect 2",  "playtime_forever": 40},
-    ]
-}
 
 
 def test_get_player_summaries():
