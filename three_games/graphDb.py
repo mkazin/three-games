@@ -169,13 +169,10 @@ class GraphDB():
     def edges(self):
         return self.graph.edges
 
-    def game_recommendations(self, center, search_limit=30, filters=[]):
+    def game_recommendations(self, center, filters=[]):
                              # TODO: , weighter=None):
         """ Builds a list recommendations based on highest overall playtime
             Returns a sorted list of tuples in the form (appid, cumulative_playtime) """
-        results = []
-
-        searches_left = search_limit
         player_queue = [center]
         visited = {center.steamid: False}
         game_hash = {}
@@ -192,6 +189,7 @@ class GraphDB():
             for friend in player.friends:
                 player_queue.append(friend)
 
+            # Process the current player, asusming they pass the filter
             if TraversalFilter.passes(player, filters):
                 # Add the playtime of each of this players' games
                 for game in player.games:
@@ -212,19 +210,12 @@ class GraphDB():
                         nonfriends = [player]
 
                     try:
-                        game_hash[
-                            game.game.appid].total_playtime += game.playtime_forever
-                        game_hash[
-                            game.game.appid].friends_with_game += friends
-                        game_hash[
-                            game.game.appid].non_friend_owners += nonfriends
-
+                        game_hash[game.game.appid].total_playtime += game.playtime_forever
+                        game_hash[game.game.appid].friends_with_game += friends
+                        game_hash[game.game.appid].non_friend_owners += nonfriends
                     except KeyError:
-                        recommended_game = GameRecommendation(
-                            game.game, game.playtime_forever,
-                            friends, nonfriends)
-
-                        game_hash[game.game.appid] = recommended_game
+                        game_hash[game.game.appid] = GameRecommendation(
+                            game.game, game.playtime_forever, friends, nonfriends)
 
             visited[player.steamid] = True
 

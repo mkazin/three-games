@@ -78,7 +78,20 @@ class SteamApi(object):
         resp = self.__get__(url, OWNED_GAMES_LIMIT_EXCEEDED)
         resp.raise_for_status()
 
-        return resp.json()['response']['games']
+        # TODO: When we figure out error handling around privacy
+        try:
+            if len(resp.json()['response'].keys()) == 0:
+                print('{} has a private gamelist?'.format(steamid))
+                return []
+
+            if resp.json()['response']['game_count'] == 0:
+                print('{} owns no games?'.format(steamid))
+                return []
+
+            return resp.json()['response']['games']
+        except KeyError as e:
+            print(resp.json())
+            raise e
 
     def get_friend_list(self, steamid, relationship='all'):
         """
