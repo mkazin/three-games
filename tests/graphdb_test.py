@@ -1,8 +1,10 @@
 import json
 from three_games.graphDb import GraphDB
 from three_games.graphDb import PlayerExclusionTraversalFilter
+from three_games.steamApi import SteamApi
 from three_games.friendCrawler import FriendCrawler
 from tests.mockSteamApi import MockSteamApi
+from requests.exceptions import HTTPError
 
 
 def test_graph():
@@ -34,3 +36,25 @@ def test_graph():
 
     assert recs[2][0] == 24980
     assert recs[2][1] == 440
+
+
+def test_api_hit_limit():
+
+    # Testing the query_limit set on the api
+    # We'll use the sample config file (assuring failure if the API is queried)
+    api = SteamApi('config/auth.conf.sample')
+    api.set_query_limit(0)
+
+    crawler = FriendCrawler(api)
+
+    try:
+        center = crawler.build_friend_graph(steamid=300)
+        print('Center:', center)
+    except HTTPError as e:
+        assert '429' in str(e)
+
+    # Shouldn't be anything cached
+    assert len(crawler.player_cache.keys()) == 0
+
+    # the_response.error_type = "Too Many Requests"
+    # the_response.status_code = 429
