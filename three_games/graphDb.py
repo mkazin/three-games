@@ -50,7 +50,7 @@ class OwnedGameTraversalFilter(TraversalFilter):
         return issubclass(type(thing), OwnedGame)
 
 
-class MinimumPlaytimeTraversalFilter(OwnedGameTraversalFilter):
+class GamePlaytimeTraversalFilter(OwnedGameTraversalFilter):
     """ Filters out games not played at least a minimum time by a player,
         prior to adding:
         1) The gametime to the list of recommendations
@@ -62,6 +62,20 @@ class MinimumPlaytimeTraversalFilter(OwnedGameTraversalFilter):
 
     def traversible(self, owned_game):
         return owned_game.playtime_forever > self.minimum_playtime
+
+
+class GameNameTraversalFilter(OwnedGameTraversalFilter):
+    """ Includes only games which contain the 'subtext' value
+        Setting reverse flag filters out matching game names
+    """
+
+    def __init__(self, subtext, reverse=False):
+        self.subtext = subtext
+        self.reverse = reverse
+
+    def traversible(self, owned_game):
+        found = self.subtext in owned_game.game.name
+        return not found if self.reverse else found
 
 
 class PlayerExclusionTraversalFilter(PlayerTraversalFilter):
@@ -107,18 +121,16 @@ class GameRecommendation(object):
     # is marked as having played the game. In seconds (to match Steam's forever_playtime)
     MIN_PLAY_TIME = 0  # 5 * 60
 
-    def __init__(self, game, total_playtime,
-                 friends_with_game=[], non_friend_owners=[]):
+    def __init__(self, game, total_playtime, **kwargs):
         """ NOTE: only 1st-degree friends should be listed in friends_with_game. """
         self.game = game
         self.total_playtime = total_playtime
-        self.friends_with_game = friends_with_game
-        self.non_friend_owners = non_friend_owners
+        self.friends_with_game = kwargs.pop('friends_with_game', [])
+        self.non_friend_owners = kwargs.pop('non_friend_owners', [])
 
     def __str__(self):
         return '{} - {} ({} hrs on average)'.format(
             self.game.name,
-            # TODO: switch to personaname for Live?
             ' owned by: Friends: [{}] ; Non-Friends: [{}]'.format(
                 ', '.join([friend.personaname for friend in self.friends_with_game]),
                 ', '.join([friend.personaname for friend in self.non_friend_owners])),
@@ -186,8 +198,7 @@ class GraphDB():
                 continue
 
             # Enqueue player's friends for BFS traversal
-            for friend in player.friends:
-                player_queue.append(friend)
+            player_queue += [friend for friend in player.friends]
 
             # Process the current player, asusming they pass the filter
             if TraversalFilter.passes(player, filters):
@@ -202,12 +213,8 @@ class GraphDB():
 
                     # Use lists to append the current player to either the friends
                     # or non-friends list in the recommendation as appropriate
-                    friends = []
-                    nonfriends = []
-                    if player in center.friends:
-                        friends = [player]
-                    else:
-                        nonfriends = [player]
+                    friends = [player] if player in center.friends else []
+                    nonfriends = [player] if player not in center.friends else []
 
                     try:
                         game_hash[game.game.appid].total_playtime += game.playtime_forever
@@ -215,7 +222,8 @@ class GraphDB():
                         game_hash[game.game.appid].non_friend_owners += nonfriends
                     except KeyError:
                         game_hash[game.game.appid] = GameRecommendation(
-                            game.game, game.playtime_forever, friends, nonfriends)
+                            game.game, game.playtime_forever,
+                            friends_with_game=friends, non_friend_owners=nonfriends)
 
             visited[player.steamid] = True
 

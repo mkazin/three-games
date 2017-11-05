@@ -24,7 +24,7 @@ def test_graph():
 
     # TODO: ,filters=[], weighter=None):
     exclude_debra = PlayerExclusionTraversalFilter([debra])
-    recs = graph.game_recommendations(center, search_limit=30, filters=[exclude_debra])
+    recs = graph.game_recommendations(center, filters=[exclude_debra])
 
     # Sort by playtime_forever and return the top results
     sorted_games = GameRecommendation.sort_by_playtime(recs, reverse=True)
@@ -63,10 +63,9 @@ def test_minimum_playtime_filter():
 
     # TODO: ,filters=[], weighter=None):
     exclude_debra = PlayerExclusionTraversalFilter([debra])
-    minimum_playtime_filter = MinimumPlaytimeTraversalFilter(150)
+    minimum_playtime_filter = GamePlaytimeTraversalFilter(150)
 
     recs = graph.game_recommendations(center,
-                                      search_limit=30,
                                       filters=[exclude_debra, minimum_playtime_filter])
 
     # Sort by playtime_forever and return the top results
