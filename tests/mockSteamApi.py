@@ -45,7 +45,10 @@ class MockSteamApi(SteamApi):
         response = []
 
         for curr in steamids:
-            response.append(MockSteamApi.PLAYER_LIST[str(curr)])
+            try:
+                response.append(MockSteamApi.PLAYER_LIST[str(curr)])
+            except KeyError:
+                pass
         return response
 
     FRIENDS_RESPONSE = {
@@ -129,3 +132,5 @@ class MockSteamApi(SteamApi):
     def get_player_achievements(self, steamid, app_id):
         return(MockSteamApi.ACHIEVEMENTS_RESPONSE_PER_STEAMID[
             str(steamid)]['achievements'])
+
+    # TODO: add Game API

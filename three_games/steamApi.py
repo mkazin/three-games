@@ -58,9 +58,7 @@ class SteamApi(object):
                 self.api_key, ','.join((str(x) for x in steamids)))
 
         logging.debug('get_player_summaries({})'.format(steamids))
-
         resp = self.__get__(url, PLAYER_SUMARY_LIMIT_EXCEEDED)
-
         resp.raise_for_status()
 
         return resp.json()['response']['players']
@@ -77,9 +75,7 @@ class SteamApi(object):
             1, 1)
 
         logging.debug('get_owned_games({})'.format(steamid))
-
         resp = self.__get__(url, OWNED_GAMES_LIMIT_EXCEEDED)
-
         resp.raise_for_status()
 
         return resp.json()['response']['games']
@@ -99,7 +95,6 @@ class SteamApi(object):
             relationship)
 
         logging.debug('get_friend_list({})'.format(steamid))
-
         resp = self.__get__(url, FRIEND_LIST_LIMIT_EXCEEDED)
 
         # TODO: When we figure out error handling around privacy
@@ -120,7 +115,6 @@ class SteamApi(object):
             self.api_key, steamid, app_id)
 
         logging.debug('get_player_achievements({}, {})'.format(steamid, app_id))
-
         resp = self.__get__(url, ACHIEVEMENTS_LIMIT_EXCEEDED)
 
         if resp.json()['playerstats'].__contains__('error'):
@@ -145,6 +139,6 @@ class SteamApi(object):
             if not self.cache.has_url(url):
                 self.query_limit -= 1
 
-            logging.warn('{} queries left'.format(self.query_limit))
+            logging.debug('{} queries left'.format(self.query_limit))
 
         return requests.get(url)

@@ -14,7 +14,7 @@ class FriendCrawler(object):
 
     def build_friend_graph(self, steamid):
 
-        # Start with the requested player
+        # Generate the Player object used to start the crawl (and cache it)
         center = Player.from_response(self.api.get_player_summary(steamid=steamid))
         self.player_cache[center.steamid] = center
 
