@@ -44,6 +44,32 @@ def test_graph():
     assert top_games[2].total_playtime == 440
 
 
+def test_game_name_filter():
+
+    returned_games = []
+    api = MockSteamApi()
+
+    games_resp = api.get_owned_games('1')
+    for curr in games_resp:
+
+        curr_game = OwnedGame.from_response(curr)
+        returned_games.append(curr_game)
+
+    # Filter out Mass Effect
+    filters = [GameNameTraversalFilter('ffe', reverse=True)]
+
+    # Fiter in Railroad Tycoon 3
+    filters += [GameNameTraversalFilter('road')]
+
+    matching = []
+    for curr in returned_games:
+        if TraversalFilter.passes(curr, filters):
+            matching.append(curr)
+
+    assert len(matching) == 1
+    assert matching[0].game.name == "Railroad Tycoon 3"
+
+
 def test_minimum_playtime_filter():
 
     crawler = FriendCrawler(MockSteamApi())
@@ -54,7 +80,6 @@ def test_minimum_playtime_filter():
     carl = center
     bob = debra.friends[0]
     eustace = debra.friends[2]
-
     graph = GraphDB()
     graph.insert_players([alice, bob, carl, debra, eustace])
 
