@@ -1,3 +1,6 @@
+from three_games.player import Player
+from three_games.game import OwnedGame
+
 import networkx as nx
 
 """
@@ -15,17 +18,53 @@ class TraversalFilter(object):
     """
 
     def traversible(self, object):
-        raise NotImplemented
+        """ Test function of the filter. Returns False if the item
+            should be filtered out """
+        raise NotImplemented('Must be implemented by subclasses')
+
+    def _applies_to_thing_(self, thing):
+        """ Test to determine if the filter applies to the thing
+            it was passed """
+        raise NotImplemented('Must be implemented by subclasses')
 
     @staticmethod
-    def passes(player, filters):
+    def passes(thing, filters):
         for filter in filters:
-            if not filter.traversible(player):
+            if filter._applies_to_thing_(thing) and \
+                    not filter.traversible(thing):
                 return False
         return True
 
 
-class PlayerExclusionTraversalFilter(TraversalFilter):
+class PlayerTraversalFilter(TraversalFilter):
+    """ Traversal Filter for Player objects """
+
+    def _applies_to_thing_(self, thing):
+        return issubclass(type(thing), Player)
+
+
+class OwnedGameTraversalFilter(TraversalFilter):
+    """ Traversal Filter for OwnedGame objects """
+
+    def _applies_to_thing_(self, thing):
+        return issubclass(type(thing), OwnedGame)
+
+
+class MinimumPlaytimeTraversalFilter(OwnedGameTraversalFilter):
+    """ Filters out games not played at least a minimum time by a player,
+        prior to adding:
+        1) The gametime to the list of recommendations
+        2) The playtime to the total playtime of the game
+        3) The  player to the list of friends who own the recommended game """
+
+    def __init__(self, minimum_playtime):
+        self.minimum_playtime = minimum_playtime
+
+    def traversible(self, owned_game):
+        return owned_game.playtime_forever > self.minimum_playtime
+
+
+class PlayerExclusionTraversalFilter(PlayerTraversalFilter):
     """ Allows filtering out of a list of players """
 
     def __init__(self, players):
@@ -35,7 +74,7 @@ class PlayerExclusionTraversalFilter(TraversalFilter):
         return player.steamid not in self.excluded
 
 
-class ClanTraversalFilter(TraversalFilter):
+class ClanTraversalFilter(PlayerTraversalFilter):
     """ Allows filtering out friends who do not belong to a particular
     gaming clan
     """
@@ -60,6 +99,46 @@ class ClanTraversalFilter(TraversalFilter):
 
 #     def advance_round(self):
 #         self.weight = self.weight * self.reudction_rate
+
+
+class GameRecommendation(object):
+
+    # Minimum time required to play before a recommendation is made and friend
+    # is marked as having played the game. In seconds (to match Steam's forever_playtime)
+    MIN_PLAY_TIME = 0  # 5 * 60
+
+    def __init__(self, game, total_playtime,
+                 friends_with_game=[], non_friend_owners=[]):
+        """ NOTE: only 1st-degree friends should be listed in friends_with_game. """
+        self.game = game
+        self.total_playtime = total_playtime
+        self.friends_with_game = friends_with_game
+        self.non_friend_owners = non_friend_owners
+
+    def __str__(self):
+        return '{} - {} ({} hrs on average)'.format(
+            self.game.name,
+            # TODO: switch to personaname for Live?
+            ' owned by: Friends: [{}] ; Non-Friends: [{}]'.format(
+                ', '.join([friend.personaname for friend in self.friends_with_game]),
+                ', '.join([friend.personaname for friend in self.non_friend_owners])),
+            round((self.total_playtime /
+                   len(self.friends_with_game + self.non_friend_owners)) / 60))
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def sort_by_playtime(recs, reverse=False):
+
+        sorted_games = sorted(recs.items(), key=lambda tuple: tuple[1].total_playtime)
+
+        if reverse:
+            sorted_games.reverse()
+
+        # Convert list of tuples to a list of GameRecommendations
+
+        return [the_tuple[1] for the_tuple in sorted_games]
 
 
 class GraphDB():
@@ -99,7 +178,7 @@ class GraphDB():
         searches_left = search_limit
         player_queue = [center]
         visited = {center.steamid: False}
-        game_durations = {}
+        game_hash = {}
 
         while player_queue:
 
@@ -116,19 +195,40 @@ class GraphDB():
             if TraversalFilter.passes(player, filters):
                 # Add the playtime of each of this players' games
                 for game in player.games:
-                    try:
-                        game_durations[game.game.appid] += game.playtime_forever
-                    except KeyError:
-                        game_durations[game.game.appid] = game.playtime_forever
 
-            print(player, game_durations)
+                    # Don't recommend games with no playtime, or add friends who never
+                    # played it. Use another function to determine which friends of a
+                    # player own a multiplayer game.
+                    if not TraversalFilter.passes(game, filters):
+                        continue
+
+                    # Use lists to append the current player to either the friends
+                    # or non-friends list in the recommendation as appropriate
+                    friends = []
+                    nonfriends = []
+                    if player in center.friends:
+                        friends = [player]
+                    else:
+                        nonfriends = [player]
+
+                    try:
+                        game_hash[
+                            game.game.appid].total_playtime += game.playtime_forever
+                        game_hash[
+                            game.game.appid].friends_with_game += friends
+                        game_hash[
+                            game.game.appid].non_friend_owners += nonfriends
+
+                    except KeyError:
+                        recommended_game = GameRecommendation(
+                            game.game, game.playtime_forever,
+                            friends, nonfriends)
+
+                        game_hash[game.game.appid] = recommended_game
+
             visited[player.steamid] = True
 
-        # Sort by playtime_forever and return the top results
-        sorted_games = sorted(game_durations.items(), key=lambda x: x[1])
-        sorted_games.reverse()
-
-        return sorted_games[:3]
+        return game_hash
 
 
 """

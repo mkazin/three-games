@@ -24,7 +24,11 @@ class MockSteamApi(SteamApi):
         ],
         '4': [
             {"appid": 234650, "name": "Shadowrun Returns",  "playtime_forever": 20000}
+        ],
+        '5': [
+            {"appid": 102600, "name": "Orcs Must Die!",  "playtime_forever": 110}
         ]
+
     }
 
     def get_owned_games(self, steamid):
