@@ -2,6 +2,8 @@ import json
 from three_games.graphDb import *
 from three_games.steamApi import SteamApi
 from three_games.friendCrawler import FriendCrawler
+from three_games.gameRecommendation import RecommendationSorting, \
+    PlaytimeRecommendation, PlayerCountRecommendation
 from tests.mockSteamApi import MockSteamApi
 from requests.exceptions import HTTPError
 
@@ -27,7 +29,8 @@ def test_graph():
     recs = graph.game_recommendations(center, filters=[exclude_debra])
 
     # Sort by playtime_forever and return the top results
-    sorted_games = GameRecommendation.sort_by_playtime(recs, reverse=True)
+    rec_system = RecommendationSorting(systems=[PlaytimeRecommendation()])
+    sorted_games = GameRecommendation.sort_by_playtime(recs, rec_system, reverse=True)
 
     # Build the output recommendations
     top_games = sorted_games[0:3]
@@ -42,6 +45,41 @@ def test_graph():
 
     assert top_games[2].game.appid == 24980
     assert top_games[2].total_playtime == 440
+
+
+def test_player_count_recommendation():
+
+    crawler = FriendCrawler(MockSteamApi())
+    center = crawler.build_friend_graph(steamid=3)
+
+    alice = center.friends[0]
+    debra = center.friends[1]
+    carl = center
+    bob = debra.friends[0]
+    eustace = debra.friends[2]
+
+    graph = GraphDB()
+    graph.insert_players([alice, bob, carl, debra, eustace])
+
+    assert len(graph.nodes()) == 5
+    assert len(graph.edges()) == 5
+
+    # TODO: ,filters=[], weighter=None):
+    exclude_debra = PlayerExclusionTraversalFilter([debra])
+    recs = graph.game_recommendations(center, filters=[exclude_debra])
+
+    # Sort by playtime_forever and return the top results
+    rec_system = RecommendationSorting(systems=[PlayerCountRecommendation()])
+    sorted_games = GameRecommendation.sort_by_playtime(recs, rec_system, reverse=True)
+
+    # Build the output recommendations
+    top_games = sorted_games[0:3]
+
+    assert len(top_games) == 3
+
+    assert top_games[0].game.appid in (7610, 24980)
+    assert top_games[1].game.appid in (7610, 24980)
+    assert top_games[2].game.appid in (234650, 33230, 102600)
 
 
 def test_game_name_filter():
@@ -94,7 +132,8 @@ def test_minimum_playtime_filter():
                                       filters=[exclude_debra, minimum_playtime_filter])
 
     # Sort by playtime_forever and return the top results
-    sorted_games = GameRecommendation.sort_by_playtime(recs, reverse=True)
+    rec_system = RecommendationSorting(systems=[PlaytimeRecommendation()])
+    sorted_games = GameRecommendation.sort_by_playtime(recs, rec_system, reverse=True)
 
     # Build the output recommendations
     top_games = sorted_games[0:3]
