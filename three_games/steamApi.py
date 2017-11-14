@@ -80,12 +80,13 @@ class SteamApi(object):
 
         # TODO: When we figure out error handling around privacy
         try:
+            # Response for a private profile will be an empty hash
             if len(resp.json()['response'].keys()) == 0:
-                print('{} has a private gamelist?'.format(steamid))
                 return []
 
+            # Response for a profile owning no games will not have a 'games'
+            # section, only a game_count of 0
             if resp.json()['response']['game_count'] == 0:
-                print('{} owns no games?'.format(steamid))
                 return []
 
             return resp.json()['response']['games']
