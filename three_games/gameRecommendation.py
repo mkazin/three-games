@@ -24,7 +24,6 @@ class RecommendationSystem(object):
 class PlaytimeRecommendation(RecommendationSystem):
 
     def get_metric(self, game_tuple):
-        print('game_tuple', game_tuple)
         return game_tuple[1].total_playtime
 
 
