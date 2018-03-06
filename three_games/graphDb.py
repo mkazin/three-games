@@ -172,8 +172,13 @@ class GraphDB():
 
         # Add paths
         for player in players:
-            for friend in player.friends:
-                self.graph.add_edge(player, friend)
+            self.__insert_player_relationships__(player)
+
+
+    def __insert_player_relationships__(self, player):
+        """ Insert a player's relationships into the graph. """
+        for friend in player.friends:
+            self.graph.add_edge(player, friend)
 
     def nodes(self):
         return self.graph.nodes
@@ -181,53 +186,73 @@ class GraphDB():
     def edges(self):
         return self.graph.edges
 
-    def game_recommendations(self, center, filters=[]):
+
+class Recommender(object):
+
+    def __init__(self):
+        self.player_queue = []
+        self.visited = {}
+        self.game_hash = {}
+
+    def get_recommendations(self, center, filters=[]):
                              # TODO: , weighter=None):
         """ Builds a list recommendations based on highest overall playtime
             Returns a sorted list of tuples in the form (appid, cumulative_playtime) """
-        player_queue = [center]
-        visited = {center.steamid: False}
-        game_hash = {}
+        self.player_queue = [center]
+        self.visited = {center.steamid: False}
+        self.game_hash = {}
 
-        while player_queue:
+        while self.player_queue:
+            self.__process_player__(center=center, filters=filters)
 
-            player = player_queue.pop(0)
+        return self.game_hash
 
-            # If already visited, skip
-            if visited.get(player.steamid, False):
-                continue
 
-            # Enqueue player's friends for BFS traversal
-            player_queue += [friend for friend in player.friends]
+    def __process_player__(self, center, filters):        
+        player = self.player_queue.pop(0)
 
-            # Process the current player, asusming they pass the filter
-            if TraversalFilter.passes(player, filters):
-                # Add the playtime of each of this players' games
-                for game in player.games:
+        # If already visited, skip
+        if self.visited.get(player.steamid, False):
+            return
 
-                    # Don't recommend games with no playtime, or add friends who never
-                    # played it. Use another function to determine which friends of a
-                    # player own a multiplayer game.
-                    if not TraversalFilter.passes(game, filters):
-                        continue
+        # Enqueue player's friends for BFS traversal
+        self.player_queue += [friend for friend in player.friends]
 
-                    # Use lists to append the current player to either the friends
-                    # or non-friends list in the recommendation as appropriate
-                    friends = [player] if player in center.friends else []
-                    nonfriends = [player] if player not in center.friends else []
+        # Mark the player as visited to avoid endless recursion
+        self.visited[player.steamid] = True
 
-                    try:
-                        game_hash[game.game.appid].total_playtime += game.playtime_forever
-                        game_hash[game.game.appid].friends_with_game += friends
-                        game_hash[game.game.appid].non_friend_owners += nonfriends
-                    except KeyError:
-                        game_hash[game.game.appid] = GameRecommendation(
-                            game.game, game.playtime_forever,
-                            friends_with_game=friends, non_friend_owners=nonfriends)
+        # Process the current player, asusming they pass the filter
+        if not TraversalFilter.passes(player, filters):
+            return
 
-            visited[player.steamid] = True
+        # Add the playtime of each of this players' games
+        for game in player.games:
+            self.__process_player_game__(player, game, center, filters)
 
-        return game_hash
+
+    def __process_player_game__(self, player, game, center, filters):
+
+        # Don't recommend games with no playtime, or add friends who never
+        # played it. Use another function to determine which friends of a
+        # player own a multiplayer game.
+        if not TraversalFilter.passes(game, filters):
+            return
+
+        # Use lists to append the current player to either the friends
+        # or non-friends list in the recommendation as appropriate
+        friends = [player] if player in center.friends else []
+        nonfriends = [player] if player not in center.friends else []
+
+        try:
+            self.game_hash[game.game.appid].total_playtime += game.playtime_forever
+            self.game_hash[game.game.appid].friends_with_game += friends
+            self.game_hash[game.game.appid].non_friend_owners += nonfriends
+        except KeyError:
+            self.game_hash[game.game.appid] = GameRecommendation(
+                game.game, game.playtime_forever,
+                friends_with_game=friends, non_friend_owners=nonfriends)
+
+
 
 
 """
