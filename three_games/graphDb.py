@@ -1,6 +1,6 @@
 from three_games.player import Player
 from three_games.game import OwnedGame
-
+from three_games.gameRecommendation import GameRecommendation
 import networkx as nx
 
 """
@@ -113,44 +113,6 @@ class ClanTraversalFilter(PlayerTraversalFilter):
 
 #     def advance_round(self):
 #         self.weight = self.weight * self.reudction_rate
-
-
-class GameRecommendation(object):
-
-    # Minimum time required to play before a recommendation is made and friend
-    # is marked as having played the game. In seconds (to match Steam's forever_playtime)
-    MIN_PLAY_TIME = 0  # 5 * 60
-
-    def __init__(self, game, total_playtime, **kwargs):
-        """ NOTE: only 1st-degree friends should be listed in friends_with_game. """
-        self.game = game
-        self.total_playtime = total_playtime
-        self.friends_with_game = kwargs.pop('friends_with_game', [])
-        self.non_friend_owners = kwargs.pop('non_friend_owners', [])
-
-    def __str__(self):
-        return '{} - {} ({} hrs on average)'.format(
-            self.game.name,
-            ' owned by: Friends: [{}] ; Non-Friends: [{}]'.format(
-                ', '.join([friend.personaname for friend in self.friends_with_game]),
-                ', '.join([friend.personaname for friend in self.non_friend_owners])),
-            round((self.total_playtime /
-                   len(self.friends_with_game + self.non_friend_owners)) / 60))
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def sort_by_playtime(recs, reverse=False):
-
-        sorted_games = sorted(recs.items(), key=lambda tuple: tuple[1].total_playtime)
-
-        if reverse:
-            sorted_games.reverse()
-
-        # Convert list of tuples to a list of GameRecommendations
-
-        return [the_tuple[1] for the_tuple in sorted_games]
 
 
 class GraphDB():
