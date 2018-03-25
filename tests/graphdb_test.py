@@ -24,7 +24,6 @@ def test_graph():
     assert len(graph.nodes()) == 5
     assert len(graph.edges()) == 5
 
-    # TODO: ,filters=[], weighter=None):
     exclude_debra = PlayerExclusionTraversalFilter([debra])
 
     recommender = Recommender(center, filters=[exclude_debra])
@@ -66,9 +65,9 @@ def test_player_count_recommendation():
     assert len(graph.nodes()) == 5
     assert len(graph.edges()) == 5
 
-    # TODO: ,filters=[], weighter=None):
     exclude_debra = PlayerExclusionTraversalFilter([debra])
-    recs = graph.game_recommendations(center, filters=[exclude_debra])
+    recommender = Recommender(center, filters=[exclude_debra])
+    recs = recommender.get_recommendations()
 
     # Sort by playtime_forever and return the top results
     rec_system = RecommendationSorting(systems=[PlayerCountRecommendation()])
