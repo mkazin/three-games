@@ -1,4 +1,5 @@
 from three_games.game import OwnedGame
+from three_games.steamApi import SteamApi
 from tests.mockSteamApi import MockSteamApi
 
 APP_ID_FALLOUT_4 = 377160
@@ -84,3 +85,40 @@ def test_get_friend_list():
     assert(friends_by_time[1]['steamid'] == "1")
     assert(friends_by_time[1]['relationship'] == "friend")
     assert(friends_by_time[1]['friend_since'] == 1447349026)
+
+
+def test_build_player_summaries_url():
+
+    expected = (
+        'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002'
+        '?key=DUMMY_KEY&format=json&steamids=100,200,300'
+    )
+
+    url = SteamApi.build_player_summaries_url("DUMMY_KEY", [100, 200, 300])
+
+    assert url == expected
+
+
+def test_build_owned_games_url():
+
+    expected = (
+        'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001'
+        '?key=DUMMY_KEY&format=json&steamid=100'
+    )
+
+    url = SteamApi.build_owned_games_url("DUMMY_KEY", 100, True, True)
+
+    assert expected in url
+    assert '&include_appinfo=1' in url
+    assert '&include_played_free_games=1' in url
+
+
+def test_build_friend_list_url():
+
+    expected = (
+        'http://api.steampowered.com/ISteamUser/GetFriendList/v0001/'
+        '?key=DUMMY_KEY&format=json&steamid=100'
+        '&relationship=all'
+    )
+
+    url = SteamApi.build_friend_list_url("DUMMY_KEY", 100, 'all')
