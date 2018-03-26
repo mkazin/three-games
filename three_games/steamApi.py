@@ -143,8 +143,8 @@ class SteamApi(object):
     @staticmethod
     def build_player_summaries_url(api_key, steam_ids):
 
-        builder = SteamApi.UrlBuilder()
-        builder.with_key(api_key).with_function(SteamApi.FUNCTION_PLAYER_SUMMARIES)
+        builder = SteamApi.UrlBuilder.create(api_key)
+        builder.with_function(SteamApi.FUNCTION_PLAYER_SUMMARIES)
         builder.with_steam_ids(steam_ids).with_version('0002')
         return builder.build()
 
