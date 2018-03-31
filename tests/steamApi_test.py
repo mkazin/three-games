@@ -104,13 +104,12 @@ def test_build_owned_games_url():
     expected = (
         'http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001'
         '?key=DUMMY_KEY&format=json&steamid=100'
+        '&include_appinfo=1&include_played_free_games=1'
     )
 
     url = SteamApi.build_owned_games_url("DUMMY_KEY", 100, True, True)
 
-    assert expected in url
-    assert '&include_appinfo=1' in url
-    assert '&include_played_free_games=1' in url
+    assert expected == url
 
 
 def test_build_friend_list_url():

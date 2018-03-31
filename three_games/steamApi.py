@@ -66,7 +66,7 @@ class SteamApi(object):
         return resp.json()['response']['players']
 
     def get_owned_games(self, steamid):
-        url = SteamApi.build_owned_games_url(self.api_key, steam_id, True, True)
+        url = SteamApi.build_owned_games_url(self.api_key, steamid, True, True)
 
         logging.debug('get_owned_games({})'.format(steamid))
         resp = self.__get__(url, OWNED_GAMES_LIMIT_EXCEEDED)
@@ -153,8 +153,7 @@ class SteamApi(object):
             api_key, steam_id,
             include_appinfo=True, include_played_free_games=True):
 
-        builder = SteamApi.UrlBuilder()
-        builder.with_key(api_key)
+        builder = SteamApi.UrlBuilder.create(api_key)
         builder.with_steam_id(steam_id)
         builder.with_function(SteamApi.FUNCTION_OWNED_GAMES)
         builder.with_version('0001')
@@ -238,8 +237,9 @@ class SteamApi(object):
                 url += '&steamids={}'.format(
                     ','.join((str(x) for x in self.steam_ids)))
 
-            # Add free-form params
+            # Add free-form params.
+            # NOTE: Sorting by key to make this method deterministic and simpler to test.
             url += ''.join(['&{}={}'.format(key, self.params[key])
-                            for key in self.params])
+                            for key in sorted(self.params)])
 
             return url
