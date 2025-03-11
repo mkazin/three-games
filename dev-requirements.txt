@@ -1,6 +1,6 @@
-pytest==3.2.3
+pytest~=8.3.5
 
 # For collecting and uploading code coverage to CodeClimate
-coverage==4.3
-pytest-cov
-codeclimate-test-reporter
+coverage~=7.6.12
+pytest-cov~=6.0.0
+codeclimate-test-reporter~=0.2.3

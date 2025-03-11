@@ -3,7 +3,7 @@ import configparser
 import json
 import logging
 import requests
-import requests_cache
+from requests_cache import CachedSession, SQLiteCache
 
 
 ACHIEVEMENTS_LIMIT_EXCEEDED = b'{"playerstats":{"success":false}}'
@@ -38,10 +38,11 @@ class SteamApi(object):
         config.read(config_file)
 
         # Set up caching of web requets
-        options = {'expire_after': CACHE_DURATION}
-        self.cache = requests_cache.backends.create_backend(
-            'sqlite', 'steamApi_cache', options)
-        requests_cache.install_cache(backend=self.cache)
+        self.cache = SQLiteCache()
+        self.session = CachedSession(
+            backend=self.cache,
+            cache_name='steamApi_cache',
+            expire_after=CACHE_DURATION)
 
         self.api_key = config.get('Steam', 'apikey')
         self.query_limit = None
@@ -123,7 +124,7 @@ class SteamApi(object):
     def __get__(self, url, limit_exceeded_body):
         if self.query_limit is not None:
             if self.query_limit < 1:
-                logging.warn('Query limit exceeded. Returning empty result')
+                logging.warning('Query limit exceeded. Returning empty result')
 
                 the_response = requests.models.Response()
                 the_response.code = "Too Many Requests"
