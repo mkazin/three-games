@@ -20,9 +20,19 @@ jobs:
       matrix:
         platform: [ ubuntu-latest, macOS-latest ]
         python: [ '3.13', '3.12', '3.11' ]
-    name: test/node ${{ matrix.node }}/${{ matrix.platform }}
-    runs-on: ${{ matrix.platform }}
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt -r dev-requirements.txt
+
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v9.0.0
         env:
