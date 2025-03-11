@@ -15,7 +15,7 @@ on:
     paths:
       - '!*.MD'
 jobs:
-  Build and submit coverage:
+  Build_and_Test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
