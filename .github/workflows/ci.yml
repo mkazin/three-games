@@ -16,9 +16,9 @@ on:
       - '!*.MD'
 jobs:
   test:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [ ubuntu-latest, macOS-latest ]
         python: [ '3.13', '3.12', '3.11' ]
     steps:
       - uses: actions/checkout@v4
