@@ -15,7 +15,7 @@ on:
     paths:
       - '!*.MD'
 jobs:
-  test:
+  Build and submit coverage:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -30,6 +30,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -m venv venv
+          source venv/bin/activate
           python -m pip install --upgrade pip setuptools wheel
           pip install -r requirements.txt -r dev-requirements.txt
 
