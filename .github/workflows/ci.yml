@@ -40,6 +40,5 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
-          prefix: venv/bin/
-          coverageCommand: pytest --cov
+          coverageCommand: venv/bin/pytest --cov
           debug: true
