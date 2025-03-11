@@ -1,0 +1,9 @@
+[project]
+name = "three_games"
+version = "1.0"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]
+
